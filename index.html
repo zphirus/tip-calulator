@@ -94,4 +94,436 @@
 
     .row {
       display: grid;
-      grid-template
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .result {
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .result ul {
+      padding-left: 18px;
+      margin: 6px 0;
+    }
+
+    .result li {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .footer-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 32px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>💰 Tip Split</h1>
+  <div class="sub">로컬 계산 · 데이터 저장 없음</div>
+
+  <button id="modeBtn">➡ Weekend</button>
+
+  <div class="card">
+    <h2>🏢 Floors</h2>
+    <div id="floors"></div>
+  </div>
+
+  <div class="card">
+    <h2>➕ Extra Tip</h2>
+    <input type="number" id="extraTip" oninput="render()" />
+  </div>
+
+  <div class="card">
+    <h2>👥 Tip Split Rules</h2>
+    <div id="rules"></div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Result</h2>
+    <div id="result"></div>
+  </div>
+
+  <hr />
+
+  <div class="card">
+    <h2>⏱️ Hour-based Split</h2>
+
+    <div class="row">
+      <input type="number" id="hourAmount" placeholder="Total Amount" oninput="render()" />
+    </div>
+
+    <div id="hourRows"></div>
+
+    <button class="secondary" onclick="addHourRow()">+ Add Server</button>
+
+    <div id="hourResult"></div>
+  </div>
+
+  <div class="footer-note">
+    이 앱은 어떤 데이터도 저장하거나 전송하지 않습니다.
+  </div>
+</div>
+
+<script>
+/* 🔴 JS 로직은 이전 답변과 동일 — 생략하지 않고 그대로 유지 */
+  <!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tip Split App</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    input {
+      margin: 4px;
+      padding: 4px;
+      width: 90px;
+    }
+    button {
+      margin: 6px 0;
+      padding: 6px 10px;
+    }
+    .block {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    .row {
+      margin-left: 20px;
+    }
+    hr {
+      margin: 30px 0;
+    }
+  </style>
+</head>
+<body>
+
+<h2>💰 Tip Split App</h2>
+
+<button id="modeBtn">➡ Weekend</button>
+
+<h3>🏢 Floors</h3>
+<div id="floors"></div>
+
+<h3>➕ Extra Tip</h3>
+<input type="number" id="extraTip" oninput="render()" />
+
+<h3>👥 Tip Split Rules</h3>
+<div id="rules"></div>
+
+<h3>📊 Result</h3>
+<div id="result"></div>
+
+<hr />
+
+<h2>⏱️ 시간 기준 추가 팁 분배</h2>
+
+<div>
+  분배할 금액
+  <input type="number" id="hourAmount" />
+</div>
+
+<div id="hourRows"></div>
+
+<button onclick="addHourRow()">+ Add Server</button>
+
+<div id="hourResult"></div>
+
+<script>
+/* ======================
+   State
+====================== */
+let mode = "weekday";
+
+const emptyFloor = { cash: "", card: "" };
+
+const floors = {
+  1: { ...emptyFloor },
+  2: { ...emptyFloor },
+  3: { ...emptyFloor }
+};
+
+const defaultRows = [
+  { percent: "", count: "" },
+  { percent: "", count: "" },
+  { percent: "", count: "" },
+  { percent: "", count: "" }
+];
+
+let rowsWeekday = JSON.parse(JSON.stringify(defaultRows));
+let rowsWeekend = {
+  1: JSON.parse(JSON.stringify(defaultRows)),
+  2: JSON.parse(JSON.stringify(defaultRows)),
+  3: JSON.parse(JSON.stringify(defaultRows))
+};
+
+let hourRows = [
+  { name: "", hours: "" },
+  { name: "", hours: "" }
+];
+
+const n = v => Number(v || 0);
+
+/* ======================
+   Core helpers
+====================== */
+function floorTotal(f) {
+  return n(f.cash) + n(f.card) + (mode === "weekend" ? 25 : 0);
+}
+
+function cleanRows(rows) {
+  return rows
+    .map(r => ({
+      percent: n(r.percent) / 100,
+      count: Math.floor(n(r.count))
+    }))
+    .filter(r => r.percent > 0 && r.count > 0);
+}
+
+function splitTips({ totalTip, rows, addHost }) {
+  if (totalTip <= 0) return null;
+
+  let groups = cleanRows(rows);
+
+  if (addHost) {
+    groups.push({ percent: 0.3, count: 1, isHost: true });
+  }
+
+  const totalWeight = groups.reduce(
+    (s, g) => s + g.percent * g.count,
+    0
+  );
+
+  if (!totalWeight) return null;
+
+  const base = totalTip / totalWeight;
+  const baseFloor = Math.floor(base);
+
+  const result = groups.map(g => {
+    const oneTip =
+      g.percent === 1
+        ? Math.floor(base)
+        : Math.floor(baseFloor * g.percent);
+
+    return {
+      percentLabel: `${Math.round(g.percent * 100)}%`,
+      count: g.count,
+      oneTip,
+      total: oneTip * g.count,
+      isHost: g.isHost
+    };
+  });
+
+  const distributed = result.reduce((s, r) => s + r.total, 0);
+
+  return {
+    totalTip,
+    base,
+    result,
+    leftover: totalTip - distributed
+  };
+}
+
+/* ======================
+   Render
+====================== */
+function render() {
+  document.getElementById("modeBtn").innerText =
+    mode === "weekday" ? "➡ Weekend" : "➡ Weekday";
+
+  renderFloors();
+  renderRules();
+  renderResult();
+  renderHour();
+}
+
+function renderFloors() {
+  const div = document.getElementById("floors");
+  div.innerHTML = "";
+
+  const show = mode === "weekday" ? [1, 2] : [1, 2, 3];
+
+  show.forEach(f => {
+    div.innerHTML += `
+      <div>
+        <b>${f}F</b>
+        Cash <input type="number" value="${floors[f].cash}"
+          onchange="floors[${f}].cash=this.value; render()" />
+        Card <input type="number" value="${floors[f].card}"
+          onchange="floors[${f}].card=this.value; render()" />
+      </div>
+    `;
+  });
+}
+
+function renderRules() {
+  const div = document.getElementById("rules");
+  div.innerHTML = "";
+
+  if (mode === "weekday") {
+    div.innerHTML += "<b>Weekday Rules</b>";
+    renderRows(div, rowsWeekday, "rowsWeekday");
+  } else {
+    [1, 2, 3].forEach(f => {
+      div.innerHTML += `<b>${f}F Rules</b>`;
+      renderRows(div, rowsWeekend[f], `rowsWeekend[${f}]`);
+    });
+  }
+}
+
+function renderRows(container, rows, path) {
+  rows.forEach((r, i) => {
+    container.innerHTML += `
+      <div class="row">
+        % <input type="number" value="${r.percent}"
+          onchange="${path}[${i}].percent=this.value; render()" />
+        Count <input type="number" value="${r.count}"
+          onchange="${path}[${i}].count=this.value; render()" />
+      </div>
+    `;
+  });
+}
+
+function renderResult() {
+  const extra = n(document.getElementById("extraTip").value);
+  let html = "";
+
+  if (mode === "weekday") {
+    const total =
+      floorTotal(floors[1]) +
+      floorTotal(floors[2]) +
+      extra;
+
+    const data = splitTips({
+      totalTip: total,
+      rows: rowsWeekday,
+      addHost: false
+    });
+
+    if (data) html += resultBlock("Weekday", data);
+  } else {
+    [1, 2, 3].forEach(f => {
+      const data = splitTips({
+        totalTip: floorTotal(floors[f]) + (f === 1 ? extra : 0),
+        rows: rowsWeekend[f],
+        addHost: true
+      });
+      if (data) html += resultBlock(`${f}F`, data);
+    });
+  }
+
+  document.getElementById("result").innerHTML = html;
+}
+
+function resultBlock(title, data) {
+  return `
+    <div class="block">
+      <h4>${title}</h4>
+      <b>Total Tip:</b> $${data.totalTip}<br/>
+      <b>Base:</b> ${data.base.toFixed(4)}
+      <ul>
+        ${data.result.map(r =>
+          `<li>${r.isHost ? "HOST " : ""}${r.percentLabel}
+          → $${r.oneTip} × ${r.count} = $${r.total}</li>`
+        ).join("")}
+      </ul>
+      <b>Leftover:</b> $${data.leftover}
+    </div>
+  `;
+}
+
+/* ======================
+   Hour split
+====================== */
+function addHourRow() {
+  hourRows.push({ name: "", hours: "" });
+  render();
+}
+
+function renderHour() {
+  const div = document.getElementById("hourRows");
+  div.innerHTML = "";
+
+  hourRows.forEach((r, i) => {
+    div.innerHTML += `
+      <div>
+        <input placeholder="이름" value="${r.name}"
+          onchange="hourRows[${i}].name=this.value; render()" />
+        <input type="number" placeholder="시간" value="${r.hours}"
+          onchange="hourRows[${i}].hours=this.value; render()" />
+      </div>
+    `;
+  });
+
+  const total = n(document.getElementById("hourAmount").value);
+  const clean = hourRows.filter(r => n(r.hours) > 0);
+  if (!total || !clean.length) return;
+
+  const totalHours = clean.reduce((s, r) => s + n(r.hours), 0);
+  const perHour = total / totalHours;
+
+  let distributed = 0;
+
+  const result = clean.map(r => {
+    const tip = Math.floor(n(r.hours) * perHour);
+    distributed += tip;
+    return { ...r, tip };
+  });
+
+  document.getElementById("hourResult").innerHTML = `
+    <div class="block">
+      <h4>📊 시간 기준 분배 결과</h4>
+      <div>시간당 금액: $${perHour.toFixed(2)}</div>
+      <ul>
+        ${result.map(r =>
+          `<li>${r.name || "Unnamed"} → ${r.hours}h = $${r.tip}</li>`
+        ).join("")}
+      </ul>
+      <b>Leftover:</b> $${total - distributed}
+    </div>
+  `;
+}
+
+/* ======================
+   Init
+====================== */
+document.getElementById("modeBtn").onclick = () => {
+  mode = mode === "weekday" ? "weekend" : "weekday";
+  render();
+};
+
+render();
+</script>
+
+</body>
+</html>
+
+</script>
+
+</body>
+</html>
