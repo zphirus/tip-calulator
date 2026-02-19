@@ -1,279 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tip Split App</title>
-
-<style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f4f6f8;
-  margin: 0;
-  padding: 12px;
-}
-
-.container {
-  max-width: 720px;
-  margin: auto;
-  background: #fff;
-  border-radius: 14px;
-  padding: 16px;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
-}
-
-h2 { margin-top: 0; }
-h3 { margin-top: 24px; }
-
-.section {
-  margin-top: 16px;
-}
-
-.row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 90px;
-}
-
-label {
-  font-size: 12px;
-  color: #555;
-  margin-bottom: 2px;
-}
-
-input {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-}
-
-button {
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: none;
-  background: #2563eb;
-  color: white;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-button.secondary {
-  background: #6b7280;
-}
-
-.card {
-  background: #fafafa;
-  border-radius: 12px;
-  padding: 12px;
-  margin-top: 12px;
-  border: 1px solid #e5e7eb;
-}
-
-ul {
-  padding-left: 18px;
-}
-
-hr {
-  margin: 28px 0;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tip Split App</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 16px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+    h2, h3 {
+      margin-top: 24px;
+    }
+    input {
+      padding: 8px 10px;
+      margin: 4px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      width: 90px;
+    }
+    button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #2563eb;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #6b7280;
+    }
+    .row {
+      margin-bottom: 10px;
+    }
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 12px;
+      background: #fafafa;
+    }
+    ul {
+      padding-left: 18px;
+    }
+    hr {
+      margin: 30px 0;
+    }
+  </style>
 </head>
-
 <body>
 <div class="container">
-<h2>💰 Tip Split App</h2>
+  <h2>💰 Tip Split App</h2>
 
-<button id="modeBtn">➡ Weekend</button>
+  <button id="modeBtn">➡ Weekend</button>
 
-<!-- Floors -->
-<div class="section">
-<h3>🏢 Floors</h3>
-<div id="floors"></div>
-</div>
+  <h3>🏢 Floors</h3>
+  <div id="floors"></div>
 
-<!-- Extra -->
-<div class="section">
-<h3>➕ Extra Tip</h3>
-<input id="extraTip" inputmode="numeric" placeholder="0" />
-</div>
+  <h3>➕ Extra Tip</h3>
+  <input id="extraTip" inputmode="numeric" placeholder="0" />
 
-<!-- Result -->
-<div class="section">
-<h3>📊 Result</h3>
-<div id="result"></div>
-</div>
+  <h3>📊 Result</h3>
+  <div id="result"></div>
 
-<hr />
+  <hr />
 
-<!-- Hour Split -->
-<h2>⏱️ 시간 기준 추가 팁 분배</h2>
+  <h2>⏱️ 시간 기준 추가 팁 분배</h2>
 
-<div class="row">
-<div class="field">
-<label>총 금액</label>
-<input id="hourAmount" inputmode="numeric" placeholder="0" />
-</div>
-</div>
+  <div class="row">
+    분배할 금액
+    <input id="hourAmount" inputmode="numeric" placeholder="0" />
+  </div>
 
-<div id="hourRows"></div>
+  <div id="hourRows"></div>
 
-<button class="secondary" id="addServer">+ Add Server</button>
+  <button class="secondary" id="addServer">+ Add Server</button>
 
-<div id="hourResult"></div>
+  <div id="hourResult"></div>
 </div>
 
 <script>
 let mode = "weekday";
 
 const floors = {
-  1:{cash:"",card:""},
-  2:{cash:"",card:""},
-  3:{cash:"",card:""}
+  1: { cash: "", card: "" },
+  2: { cash: "", card: "" },
+  3: { cash: "", card: "" }
 };
 
 const percentRows = [
-  {id:1,percent:"",count:""},
-  {id:2,percent:"",count:""},
-  {id:3,percent:"",count:""},
-  {id:4,percent:"",count:""}
+  { id: 1, percent: "", count: "" },
+  { id: 2, percent: "", count: "" },
+  { id: 3, percent: "", count: "" },
+  { id: 4, percent: "", count: "" }
 ];
 
 let hourRows = [
-  {id:1,name:"",hours:""},
-  {id:2,name:"",hours:""}
+  { id: 1, name: "", hours: "" },
+  { id: 2, name: "", hours: "" }
 ];
 
-const n = v => Number(v||0);
+const n = v => Number(v || 0);
 
-function floorTotal(f){
-  return n(f.cash)+n(f.card)+(mode==="weekend"?25:0);
+function floorTotal(f) {
+  return n(f.cash) + n(f.card) + (mode === "weekend" ? 25 : 0);
 }
 
-function render(){
+function render() {
   renderFloors();
   renderResult();
   renderHour();
 }
 
-/* Floors + Percent */
-function renderFloors(){
-  const wrap=document.getElementById("floors");
-  wrap.innerHTML="";
+function renderFloors() {
+  const wrap = document.getElementById("floors");
+  wrap.innerHTML = "";
 
   [1,2,...(mode==="weekend"?[3]:[])].forEach(f=>{
-    const d=document.createElement("div");
-    d.className="row";
-    d.innerHTML=`
-      <div class="field"><label>${f}F Cash</label><input inputmode="numeric" value="${floors[f].cash}"></div>
-      <div class="field"><label>${f}F Card</label><input inputmode="numeric" value="${floors[f].card}"></div>
+    const d = document.createElement("div");
+    d.className = "row";
+    d.innerHTML = `
+      <b>${f}F</b>
+      Cash <input inputmode="numeric" value="${floors[f].cash}">
+      Card <input inputmode="numeric" value="${floors[f].card}">
     `;
-    const i=d.querySelectorAll("input");
-    i[0].oninput=e=>{floors[f].cash=e.target.value;render();}
-    i[1].oninput=e=>{floors[f].card=e.target.value;render();}
+    const inputs = d.querySelectorAll("input");
+    inputs[0].oninput = e => floors[f].cash = e.target.value;
+    inputs[1].oninput = e => floors[f].card = e.target.value;
     wrap.appendChild(d);
   });
 
   percentRows.forEach(r=>{
-    const d=document.createElement("div");
-    d.className="row";
-    d.innerHTML=`
-      <div class="field"><label>Percent %</label><input inputmode="numeric" value="${r.percent}"></div>
-      <div class="field"><label>People</label><input inputmode="numeric" value="${r.count}"></div>
+    const d = document.createElement("div");
+    d.className = "row";
+    d.innerHTML = `
+      % <input inputmode="numeric" value="${r.percent}">
+      Count <input inputmode="numeric" value="${r.count}">
     `;
-    const i=d.querySelectorAll("input");
-    i[0].oninput=e=>{r.percent=e.target.value;render();}
-    i[1].oninput=e=>{r.count=e.target.value;render();}
+    const i = d.querySelectorAll("input");
+    i[0].oninput = e => r.percent = e.target.value;
+    i[1].oninput = e => r.count = e.target.value;
     wrap.appendChild(d);
   });
 }
 
-/* Tip Result */
-function renderResult(){
-  const extra=n(document.getElementById("extraTip").value);
-  const total=floorTotal(floors[1])+floorTotal(floors[2])+extra;
+function renderResult() {
+  const extra = n(document.getElementById("extraTip").value);
+  const total = floorTotal(floors[1]) + floorTotal(floors[2]) + extra;
 
-  const rows=percentRows
-    .map(r=>({p:n(r.percent)/100,c:Math.floor(n(r.count))}))
-    .filter(r=>r.p>0&&r.c>0);
+  let rows = percentRows
+    .map(r => ({ p: n(r.percent)/100, c: Math.floor(n(r.count)) }))
+    .filter(r => r.p>0 && r.c>0);
 
-  if(!rows.length||total<=0){
-    document.getElementById("result").innerHTML="";
+  if (!rows.length || total<=0) {
+    document.getElementById("result").innerHTML = "";
     return;
   }
 
-  const weight=rows.reduce((s,r)=>s+r.p*r.c,0);
-  const base=Math.floor(total/weight);
+  const weight = rows.reduce((s,r)=>s+r.p*r.c,0);
+  const base = Math.floor(total/weight);
 
-  let dist=0;
-  let html=`<div class="card"><b>Total:</b> $${total}<ul>`;
+  let html = `<div class="card"><b>Total:</b> $${total}<ul>`;
+  let dist = 0;
+
   rows.forEach(r=>{
-    const one=Math.floor(base*r.p);
-    const sum=one*r.c;
-    dist+=sum;
-    html+=`<li>${r.p*100}% → $${one} × ${r.c} = $${sum}</li>`;
+    const one = Math.floor(base*r.p);
+    const sum = one*r.c;
+    dist += sum;
+    html += `<li>${r.p*100}% → $${one} × ${r.c} = $${sum}</li>`;
   });
-  html+=`</ul><b>Leftover:</b> $${total-dist}</div>`;
-  document.getElementById("result").innerHTML=html;
+
+  html += `</ul><b>Leftover:</b> $${total-dist}</div>`;
+  document.getElementById("result").innerHTML = html;
 }
 
-/* Hour Split */
-function renderHour(){
-  const wrap=document.getElementById("hourRows");
-  wrap.innerHTML="";
+function renderHour() {
+  const wrap = document.getElementById("hourRows");
+  wrap.innerHTML = "";
+
   hourRows.forEach(r=>{
-    const d=document.createElement("div");
-    d.className="row";
-    d.innerHTML=`
-      <div class="field"><label>Name</label><input value="${r.name}"></div>
-      <div class="field"><label>Hours</label><input inputmode="numeric" value="${r.hours}"></div>
+    const d = document.createElement("div");
+    d.className = "row";
+    d.innerHTML = `
+      <input placeholder="Name" value="${r.name}">
+      <input inputmode="numeric" placeholder="Hours" value="${r.hours}">
     `;
-    const i=d.querySelectorAll("input");
-    i[0].oninput=e=>{r.name=e.target.value;render();}
-    i[1].oninput=e=>{r.hours=e.target.value;render();}
+    const i = d.querySelectorAll("input");
+    i[0].oninput = e => r.name = e.target.value;
+    i[1].oninput = e => r.hours = e.target.value;
     wrap.appendChild(d);
   });
 
-  const total=n(document.getElementById("hourAmount").value);
-  const clean=hourRows.filter(r=>n(r.hours)>0);
-  if(!total||!clean.length){
+  const total = n(document.getElementById("hourAmount").value);
+  const clean = hourRows.filter(r=>n(r.hours)>0);
+  if (!total || !clean.length) {
     document.getElementById("hourResult").innerHTML="";
     return;
   }
 
-  const hours=clean.reduce((s,r)=>s+n(r.hours),0);
-  const per=total/hours;
+  const hours = clean.reduce((s,r)=>s+n(r.hours),0);
+  const per = total/hours;
 
-  let dist=0;
-  let html=`<div class="card"><div>Per hour: $${per.toFixed(2)}</div><ul>`;
+  let html = `<div class="card"><div>Per hour: $${per.toFixed(2)}</div><ul>`;
+  let dist = 0;
+
   clean.forEach(r=>{
-    const tip=Math.floor(n(r.hours)*per);
-    dist+=tip;
-    html+=`<li>${r.name||"Unnamed"} → $${tip}</li>`;
+    const tip = Math.floor(n(r.hours)*per);
+    dist += tip;
+    html += `<li>${r.name||"Unnamed"} → $${tip}</li>`;
   });
-  html+=`</ul><b>Leftover:</b> $${total-dist}</div>`;
-  document.getElementById("hourResult").innerHTML=html;
+
+  html += `</ul><b>Leftover:</b> $${total-dist}</div>`;
+  document.getElementById("hourResult").innerHTML = html;
 }
 
-document.getElementById("modeBtn").onclick=()=>{
-  mode=mode==="weekday"?"weekend":"weekday";
-  document.getElementById("modeBtn").innerText=mode==="weekday"?"➡ Weekend":"➡ Weekday";
+document.getElementById("modeBtn").onclick = ()=>{
+  mode = mode==="weekday"?"weekend":"weekday";
+  document.getElementById("modeBtn").innerText =
+    mode==="weekday"?"➡ Weekend":"➡ Weekday";
   render();
 };
 
-document.getElementById("extraTip").oninput=render;
-document.getElementById("hourAmount").oninput=render;
+document.getElementById("extraTip").oninput = render;
+document.getElementById("hourAmount").oninput = render;
 
-document.getElementById("addServer").onclick=()=>{
-  hourRows.push({id:Date.now(),name:"",hours:""});
+document.getElementById("addServer").onclick = ()=>{
+  hourRows.push({ id: Date.now(), name:"", hours:"" });
   render();
 };
 
