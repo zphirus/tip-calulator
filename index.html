@@ -259,4 +259,25 @@ function renderHour(){
     dist+=tip;
     html+=`<li>${r.name||"Unnamed"} → $${tip}</li>`;
   });
-  html+=`</ul><b>Leftover:</b> $${tot
+  html+=`</ul><b>Leftover:</b> $${total-dist}</div>`;
+  document.getElementById("hourResult").innerHTML=html;
+}
+
+document.getElementById("modeBtn").onclick=()=>{
+  mode=mode==="weekday"?"weekend":"weekday";
+  document.getElementById("modeBtn").innerText=mode==="weekday"?"➡ Weekend":"➡ Weekday";
+  render();
+};
+
+document.getElementById("extraTip").oninput=render;
+document.getElementById("hourAmount").oninput=render;
+
+document.getElementById("addServer").onclick=()=>{
+  hourRows.push({id:Date.now(),name:"",hours:""});
+  render();
+};
+
+render();
+</script>
+</body>
+</html>
