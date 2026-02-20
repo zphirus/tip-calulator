@@ -49,6 +49,9 @@ button {
   color:#fff;
   font-size:14px;
 }
+button.secondary {
+  background:#6b7280;
+}
 .card {
   margin-top:12px;
   padding:12px;
@@ -57,6 +60,7 @@ button {
 }
 ul { padding-left:18px; }
 hr { margin:28px 0; }
+.hidden { display:none; }
 </style>
 </head>
 
@@ -110,30 +114,44 @@ hr { margin:28px 0; }
   <div class="field"><label>총 금액</label><input id="hourTotal" inputmode="numeric"></div>
 </div>
 
-<div class="row">
-  <div class="field"><label>Name</label><input id="n1"></div>
-  <div class="field"><label>Hours</label><input id="h1" inputmode="numeric"></div>
+<!-- Hour rows (predefined) -->
+<div id="hourSection">
+  <div class="row">
+    <div class="field"><label>Name</label><input id="n1"></div>
+    <div class="field"><label>Hours</label><input id="h1" inputmode="numeric"></div>
+  </div>
+  <div class="row">
+    <div class="field"><label>Name</label><input id="n2"></div>
+    <div class="field"><label>Hours</label><input id="h2" inputmode="numeric"></div>
+  </div>
+  <div class="row hidden" id="row3">
+    <div class="field"><label>Name</label><input id="n3"></div>
+    <div class="field"><label>Hours</label><input id="h3" inputmode="numeric"></div>
+  </div>
+  <div class="row hidden" id="row4">
+    <div class="field"><label>Name</label><input id="n4"></div>
+    <div class="field"><label>Hours</label><input id="h4" inputmode="numeric"></div>
+  </div>
+  <div class="row hidden" id="row5">
+    <div class="field"><label>Name</label><input id="n5"></div>
+    <div class="field"><label>Hours</label><input id="h5" inputmode="numeric"></div>
+  </div>
 </div>
-<div class="row">
-  <div class="field"><label>Name</label><input id="n2"></div>
-  <div class="field"><label>Hours</label><input id="h2" inputmode="numeric"></div>
-</div>
-<div class="row">
-  <div class="field"><label>Name</label><input id="n3"></div>
-  <div class="field"><label>Hours</label><input id="h3" inputmode="numeric"></div>
-</div>
+
+<button class="secondary" id="addServer">+ Add Server</button>
 
 <div id="hourResult"></div>
 </div>
 
 <script>
 const n = v => Number(v||0);
+
+/* ===== Percent Split ===== */
 document.querySelectorAll("input").forEach(i =>
   i.addEventListener("input", calculate)
 );
 
 function calculate() {
-  /* ===== Percent Split ===== */
   const total =
     n(f1c.value)+n(f1d.value)+
     n(f2c.value)+n(f2d.value)+
@@ -163,18 +181,18 @@ function calculate() {
     result.innerHTML="";
   }
 
-  /* ===== Hour Split ===== */
-  const hourTotal=n(hourTotalInput.value);
+  hourCalc();
 }
 
-const hourTotalInput=document.getElementById("hourTotal");
-
+/* ===== Hour Split ===== */
 function hourCalc(){
   const total=n(hourTotal.value);
   const rows=[
     {name:n1.value,h:n(h1.value)},
     {name:n2.value,h:n(h2.value)},
-    {name:n3.value,h:n(h3.value)}
+    {name:n3.value,h:n(h3?.value)},
+    {name:n4.value,h:n(h4?.value)},
+    {name:n5.value,h:n(h5?.value)}
   ].filter(r=>r.h>0);
 
   if(!total||!rows.length){
@@ -195,8 +213,13 @@ function hourCalc(){
   hourResult.innerHTML=html;
 }
 
-document.querySelectorAll("#hourTotal,#n1,#h1,#n2,#h2,#n3,#h3")
-  .forEach(i=>i.addEventListener("input",hourCalc));
+/* ===== Add Server (show only) ===== */
+let visibleRows = 2;
+document.getElementById("addServer").onclick = () => {
+  visibleRows++;
+  const row = document.getElementById("row"+visibleRows);
+  if(row) row.classList.remove("hidden");
+};
 </script>
 </body>
 </html>
