@@ -1,6 +1,6 @@
 {
-  "name": "Tip Split App",
-  "short_name": "TipSP",
+  "name": "Tip Calculator",
+  "short_name": "Tipcal",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -19,4 +19,5 @@
     }
   ]
 }
+
 
