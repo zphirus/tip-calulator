@@ -1,241 +1,182 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tip Split App</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#111827">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#111827" />
 
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tip Split App</title>
-
-<style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f4f6f8;
-  padding: 12px;
-}
-.container {
-  max-width: 760px;
-  margin: auto;
-  background: #fff;
-  border-radius: 14px;
-  padding: 16px;
-}
-h2,h3 { margin-top: 20px; }
-.row {
-  display:flex;
-  gap:8px;
-  margin-bottom:8px;
-  flex-wrap:wrap;
-}
-.field {
-  flex:1;
-  min-width:120px;
-  display:flex;
-  flex-direction:column;
-}
-label {
-  font-size:12px;
-  color:#555;
-}
-input {
-  padding:8px;
-  font-size:16px;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
-button {
-  padding:10px 14px;
-  border:none;
-  border-radius:10px;
-  background:#2563eb;
-  color:#fff;
-  font-size:14px;
-}
-button.secondary {
-  background:#6b7280;
-}
-.card {
-  margin-top:12px;
-  padding:12px;
-  border-radius:12px;
-  background:#fafafa;
-}
-ul { padding-left:18px; }
-hr { margin:28px 0; }
-.hidden { display:none; }
-</style>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont;
+      background: #f8fafc;
+      margin: 0;
+      padding: 16px;
+    }
+    h2, h3 {
+      margin-top: 24px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      flex: 1;
+      min-width: 100px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #111827;
+      color: white;
+      font-size: 14px;
+    }
+    ul {
+      padding-left: 18px;
+    }
+  </style>
 </head>
 
 <body>
-<div class="container">
+
 <h2>💰 Tip Split App</h2>
 
-<!-- Floors -->
-<h3>🏢 Floors</h3>
-<div class="row">
-  <div class="field"><label>1F Cash</label><input id="f1c" inputmode="numeric"></div>
-  <div class="field"><label>1F Card</label><input id="f1d" inputmode="numeric"></div>
-</div>
-<div class="row">
-  <div class="field"><label>2F Cash</label><input id="f2c" inputmode="numeric"></div>
-  <div class="field"><label>2F Card</label><input id="f2d" inputmode="numeric"></div>
+<button onclick="toggleMode()">Mode: <span id="modeLabel">Weekday</span></button>
+
+<div class="card">
+  <h3>🏢 Floors</h3>
+
+  <div class="row">
+    <b>1F</b>
+    <input type="number" placeholder="Cash" oninput="floors[1].cash=this.value; render()" />
+    <input type="number" placeholder="Card" oninput="floors[1].card=this.value; render()" />
+  </div>
+
+  <div class="row">
+    <b>2F</b>
+    <input type="number" placeholder="Cash" oninput="floors[2].cash=this.value; render()" />
+    <input type="number" placeholder="Card" oninput="floors[2].card=this.value; render()" />
+  </div>
+
+  <div class="row">
+    <b>3F</b>
+    <input type="number" placeholder="Cash" oninput="floors[3].cash=this.value; render()" />
+    <input type="number" placeholder="Card" oninput="floors[3].card=this.value; render()" />
+  </div>
 </div>
 
-<h3>➕ Extra Tip</h3>
-<input id="extra" inputmode="numeric">
-
-<!-- Percent Split -->
-<h3>📊 Percent / People Split</h3>
-
-<div class="row">
-  <div class="field"><label>Percent %</label><input id="p1" inputmode="numeric"></div>
-  <div class="field"><label>People</label><input id="c1" inputmode="numeric"></div>
-</div>
-<div class="row">
-  <div class="field"><label>Percent %</label><input id="p2" inputmode="numeric"></div>
-  <div class="field"><label>People</label><input id="c2" inputmode="numeric"></div>
-</div>
-<div class="row">
-  <div class="field"><label>Percent %</label><input id="p3" inputmode="numeric"></div>
-  <div class="field"><label>People</label><input id="c3" inputmode="numeric"></div>
-</div>
-<div class="row">
-  <div class="field"><label>Percent %</label><input id="p4" inputmode="numeric"></div>
-  <div class="field"><label>People</label><input id="c4" inputmode="numeric"></div>
+<div class="card">
+  <h3>➕ Extra Tip</h3>
+  <input type="number" placeholder="Extra Tip" oninput="extraTip=this.value; render()" />
 </div>
 
-<h3>📊 Result</h3>
-<div id="result"></div>
+<div class="card">
+  <h3>📊 Tip Split</h3>
+  <div id="result"></div>
+</div>
 
 <hr />
 
-<!-- Hour Split -->
-<h2>⏱️ 시간 기준 팁 분배</h2>
+<div class="card">
+  <h3>⏱️ 시간 기준 팁 분배</h3>
 
-<div class="row">
-  <div class="field"><label>총 금액</label><input id="hourTotal" inputmode="numeric"></div>
-</div>
+  <input type="number" placeholder="총 금액" oninput="hourAmount=this.value; renderHour()" />
 
-<!-- Hour rows (predefined) -->
-<div id="hourSection">
-  <div class="row">
-    <div class="field"><label>Name</label><input id="n1"></div>
-    <div class="field"><label>Hours</label><input id="h1" inputmode="numeric"></div>
-  </div>
-  <div class="row">
-    <div class="field"><label>Name</label><input id="n2"></div>
-    <div class="field"><label>Hours</label><input id="h2" inputmode="numeric"></div>
-  </div>
-  <div class="row hidden" id="row3">
-    <div class="field"><label>Name</label><input id="n3"></div>
-    <div class="field"><label>Hours</label><input id="h3" inputmode="numeric"></div>
-  </div>
-  <div class="row hidden" id="row4">
-    <div class="field"><label>Name</label><input id="n4"></div>
-    <div class="field"><label>Hours</label><input id="h4" inputmode="numeric"></div>
-  </div>
-  <div class="row hidden" id="row5">
-    <div class="field"><label>Name</label><input id="n5"></div>
-    <div class="field"><label>Hours</label><input id="h5" inputmode="numeric"></div>
-  </div>
-</div>
+  <div id="hourRows"></div>
 
-<button class="secondary" id="addServer">+ Add Server</button>
+  <button onclick="addHourRow()">+ Add Server</button>
 
-<div id="hourResult"></div>
+  <div id="hourResult"></div>
 </div>
 
 <script>
-const n = v => Number(v||0);
+let mode = "weekday";
+let extraTip = 0;
+let hourAmount = 0;
 
-/* ===== Percent Split ===== */
-document.querySelectorAll("input").forEach(i =>
-  i.addEventListener("input", calculate)
-);
-
-function calculate() {
-  const total =
-    n(f1c.value)+n(f1d.value)+
-    n(f2c.value)+n(f2d.value)+
-    n(extra.value);
-
-  const rows = [
-    {p:n(p1.value)/100,c:n(c1.value)},
-    {p:n(p2.value)/100,c:n(c2.value)},
-    {p:n(p3.value)/100,c:n(c3.value)},
-    {p:n(p4.value)/100,c:n(c4.value)}
-  ].filter(r=>r.p>0&&r.c>0);
-
-  if(rows.length && total>0){
-    const weight=rows.reduce((s,r)=>s+r.p*r.c,0);
-    const base=Math.floor(total/weight);
-    let dist=0;
-    let html=`<div class="card"><b>Total:</b> $${total}<ul>`;
-    rows.forEach(r=>{
-      const one=Math.floor(base*r.p);
-      const sum=one*r.c;
-      dist+=sum;
-      html+=`<li>${r.p*100}% → $${one} × ${r.c} = $${sum}</li>`;
-    });
-    html+=`</ul><b>Leftover:</b> $${total-dist}</div>`;
-    result.innerHTML=html;
-  } else {
-    result.innerHTML="";
-  }
-
-  hourCalc();
-}
-
-/* ===== Hour Split ===== */
-function hourCalc(){
-  const total=n(hourTotal.value);
-  const rows=[
-    {name:n1.value,h:n(h1.value)},
-    {name:n2.value,h:n(h2.value)},
-    {name:n3.value,h:n(h3?.value)},
-    {name:n4.value,h:n(h4?.value)},
-    {name:n5.value,h:n(h5?.value)}
-  ].filter(r=>r.h>0);
-
-  if(!total||!rows.length){
-    hourResult.innerHTML="";
-    return;
-  }
-
-  const sum=rows.reduce((s,r)=>s+r.h,0);
-  const per=total/sum;
-  let dist=0;
-  let html=`<div class="card"><div>Per hour: $${per.toFixed(2)}</div><ul>`;
-  rows.forEach(r=>{
-    const tip=Math.floor(r.h*per);
-    dist+=tip;
-    html+=`<li>${r.name||"Unnamed"} → $${tip}</li>`;
-  });
-  html+=`</ul><b>Leftover:</b> $${total-dist}</div>`;
-  hourResult.innerHTML=html;
-}
-
-/* ===== Add Server (show only) ===== */
-let visibleRows = 2;
-document.getElementById("addServer").onclick = () => {
-  visibleRows++;
-  const row = document.getElementById("row"+visibleRows);
-  if(row) row.classList.remove("hidden");
+const floors = {
+  1: { cash: 0, card: 0 },
+  2: { cash: 0, card: 0 },
+  3: { cash: 0, card: 0 }
 };
-</script>
-  <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js");
-    });
-  }
+
+let hourRows = [
+  { name: "", hours: "" },
+  { name: "", hours: "" }
+];
+
+function n(v) { return Number(v || 0); }
+
+function toggleMode() {
+  mode = mode === "weekday" ? "weekend" : "weekday";
+  document.getElementById("modeLabel").innerText =
+    mode === "weekday" ? "Weekday" : "Weekend";
+  render();
+}
+
+function floorTotal(f) {
+  return n(f.cash) + n(f.card) + (mode === "weekend" ? 25 : 0);
+}
+
+function render() {
+  const total =
+    floorTotal(floors[1]) +
+    floorTotal(floors[2]) +
+    floorTotal(floors[3]) +
+    n(extraTip);
+
+  document.getElementById("result").innerHTML =
+    `<b>Total Tip:</b> $${total}`;
+}
+
+function renderHour() {
+  const clean = hourRows.filter(r => r.hours > 0);
+  const totalHours = clean.reduce((s,r)=>s+n(r.hours),0);
+  if (!totalHours) return;
+
+  const perHour = hourAmount / totalHours;
+
+  document.getElementById("hourResult").innerHTML =
+    "<ul>" +
+    clean.map(r =>
+      `<li>${r.name || "Unnamed"}: $${Math.floor(r.hours * perHour)}</li>`
+    ).join("") +
+    "</ul>";
+}
+
+function addHourRow() {
+  hourRows.push({ name:"", hours:"" });
+  drawHourRows();
+}
+
+function drawHourRows() {
+  document.getElementById("hourRows").innerHTML =
+    hourRows.map((r,i)=>`
+      <div class="row">
+        <input placeholder="Name" oninput="hourRows[${i}].name=this.value; renderHour()" />
+        <input type="number" placeholder="Hours" oninput="hourRows[${i}].hours=this.value; renderHour()" />
+      </div>
+    `).join("");
+}
+
+drawHourRows();
 </script>
 
 </body>
 </html>
-
-
