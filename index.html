@@ -1,213 +1,139 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tip Split App</title>
-
-<link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#111827" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tip Split</title>
 
 <style>
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont;
-  background: #f1f5f9;
-  margin: 0;
-  padding: 14px;
+  background: #f4f6f8;
+  padding: 16px;
 }
-h2, h3 { margin-top: 20px; }
-.card {
+
+section {
   background: #fff;
-  border-radius: 14px;
   padding: 14px;
-  margin-bottom: 14px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.06);
+  border-radius: 12px;
+  margin-bottom: 16px;
 }
-.floor-row {
-  display: grid;
-  grid-template-columns: 40px 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 8px;
+
+h2 {
+  margin-top: 0;
+  font-size: 18px;
 }
-.split-row {
+
+input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  margin: 6px 0;
+}
+
+.row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-bottom: 6px;
 }
-input {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  font-size: 16px;
-}
+
 button {
-  padding: 10px 14px;
+  padding: 10px;
+  font-size: 16px;
   border-radius: 8px;
   border: none;
-  background: #111827;
-  color: #fff;
-  font-size: 14px;
+  background: #007aff;
+  color: white;
+  margin-top: 8px;
 }
-.hour-row {
-  display: grid;
-  grid-template-columns: 1fr 80px;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.small {
-  font-size: 13px;
-  color: #64748b;
+
+.result {
+  font-weight: bold;
+  margin-top: 8px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>💰 Tip Split App</h2>
+<!-- 총 팁 -->
+<section>
+  <h2>총 팁 금액</h2>
+  <input id="totalTip" type="number" inputmode="decimal" placeholder="총 팁 금액" />
+</section>
 
-<div class="card">
-<h3>🏢 Floors</h3>
+<!-- 층별 팁 -->
+<section>
+  <h2>층별 팁</h2>
+  <input id="floor1" type="number" inputmode="decimal" placeholder="1층 팁" />
+  <input id="floor2" type="number" inputmode="decimal" placeholder="2층 팁" />
+  <input id="floor3" type="number" inputmode="decimal" placeholder="3층 팁" />
+</section>
 
-<div class="floor-row">
-  <b>1F</b>
-  <input type="number" placeholder="Cash" oninput="floors[1].cash=this.value; render()" />
-  <input type="number" placeholder="Card" oninput="floors[1].card=this.value; render()" />
-</div>
+<!-- 퍼센트 분배 -->
+<section>
+  <h2>퍼센트로 나누기 (5명)</h2>
+  <div id="percentInputs"></div>
+  <div id="percentResult" class="result"></div>
+</section>
 
-<div class="floor-row">
-  <b>2F</b>
-  <input type="number" placeholder="Cash" oninput="floors[2].cash=this.value; render()" />
-  <input type="number" placeholder="Card" oninput="floors[2].card=this.value; render()" />
-</div>
+<!-- 사람 수 분배 -->
+<section>
+  <h2>사람 수로 나누기 (5명)</h2>
+  <input id="peopleCount" type="number" inputmode="numeric" placeholder="사람 수" />
+  <div id="peopleResult" class="result"></div>
+</section>
 
-<div class="floor-row">
-  <b>3F</b>
-  <input type="number" placeholder="Cash" oninput="floors[3].cash=this.value; render()" />
-  <input type="number" placeholder="Card" oninput="floors[3].card=this.value; render()" />
-</div>
-</div>
-
-<div class="card">
-<h3>➕ Extra Tip</h3>
-<input type="number" placeholder="Extra Tip" oninput="extraTip=this.value; render()" />
-</div>
-
-<div class="card">
-<h3>📊 퍼센트 / 인원 기준 분배</h3>
-
-<div id="splitRows"></div>
-
-<div id="splitResult" class="small"></div>
-</div>
-
-<div class="card">
-<h3>⏱️ 시간 기준 팁 분배</h3>
-
-<input type="number" placeholder="총 금액" oninput="hourAmount=this.value; renderHour()" />
-
-<div id="hourRows"></div>
-<button onclick="addHourRow()">+ Add Server</button>
-
-<div id="hourResult" class="small"></div>
-</div>
+<!-- 시간 분배 -->
+<section>
+  <h2>시간 기준 분배 (최대 8명)</h2>
+  <div id="timeInputs"></div>
+  <button onclick="addTimeRow()">+ 사람 추가</button>
+  <div id="timeResult" class="result"></div>
+</section>
 
 <script>
-const floors = {
-  1:{cash:0,card:0},
-  2:{cash:0,card:0},
-  3:{cash:0,card:0}
-};
-let extraTip = 0;
+const percentInputs = document.getElementById("percentInputs");
+const timeInputs = document.getElementById("timeInputs");
 
-const splitRows = Array.from({length:5},()=>({percent:"",count:""}));
-
-let hourAmount = 0;
-let hourRows = [
-  {name:"",hours:""},
-  {name:"",hours:""}
-];
-
-function n(v){return Number(v||0);}
-
-function totalTip(){
-  return (
-    n(floors[1].cash)+n(floors[1].card)+
-    n(floors[2].cash)+n(floors[2].card)+
-    n(floors[3].cash)+n(floors[3].card)+
-    n(extraTip)
-  );
+for (let i = 0; i < 5; i++) {
+  percentInputs.innerHTML += `
+    <input type="number" inputmode="decimal" placeholder="퍼센트 ${i+1} (%)" />
+  `;
 }
 
-function drawSplitRows(){
-  document.getElementById("splitRows").innerHTML =
-    splitRows.map((r,i)=>`
-      <div class="split-row">
-        <input type="number" placeholder="%"
-          oninput="splitRows[${i}].percent=this.value; render()" />
-        <input type="number" placeholder="People"
-          oninput="splitRows[${i}].count=this.value; render()" />
-      </div>
-    `).join("");
+let timeCount = 0;
+function addTimeRow() {
+  if (timeCount >= 8) return;
+  timeInputs.innerHTML += `
+    <input type="number" inputmode="decimal" placeholder="사람 ${timeCount+1} 근무 시간" />
+  `;
+  timeCount++;
 }
 
-function render(){
-  const total = totalTip();
-  const groups = splitRows
-    .map(r=>({p:n(r.percent)/100,c:n(r.count)}))
-    .filter(r=>r.p>0 && r.c>0);
+document.body.addEventListener("input", calculate);
 
-  if(!groups.length){
-    document.getElementById("splitResult").innerText =
-      `Total Tip: $${total}`;
-    return;
-  }
+function calculate() {
+  const total = Number(totalTip.value) || 0;
 
-  const weight = groups.reduce((s,g)=>s+g.p*g.c,0);
-  const base = total/weight;
+  // 퍼센트 계산
+  const percents = [...percentInputs.querySelectorAll("input")].map(i => Number(i.value) || 0);
+  const percentSum = percents.reduce((a,b)=>a+b,0);
+  percentResult.textContent = percentSum
+    ? percents.map(p => ((total * p / percentSum).toFixed(2))).join(" / ")
+    : "";
 
-  const html = groups.map(g=>{
-    const one = Math.floor(base*g.p);
-    return `<li>${g.p*100}% × ${g.c}명 → $${one} each</li>`;
-  }).join("");
+  // 사람 수 계산
+  const people = Number(peopleCount.value) || 0;
+  peopleResult.textContent = people ? (total / people).toFixed(2) : "";
 
-  document.getElementById("splitResult").innerHTML =
-    `<b>Total Tip:</b> $${total}<ul>${html}</ul>`;
+  // 시간 계산
+  const times = [...timeInputs.querySelectorAll("input")].map(i => Number(i.value) || 0);
+  const timeSum = times.reduce((a,b)=>a+b,0);
+  timeResult.textContent = timeSum
+    ? times.map(t => ((total * t / timeSum).toFixed(2))).join(" / ")
+    : "";
 }
-
-function drawHourRows(){
-  document.getElementById("hourRows").innerHTML =
-    hourRows.map((r,i)=>`
-      <div class="hour-row">
-        <input placeholder="Name"
-          oninput="hourRows[${i}].name=this.value; renderHour()" />
-        <input type="number" placeholder="Hours"
-          oninput="hourRows[${i}].hours=this.value; renderHour()" />
-      </div>
-    `).join("");
-}
-
-function addHourRow(){
-  if(hourRows.length>=8) return;
-  hourRows.push({name:"",hours:""});
-  drawHourRows();
-}
-
-function renderHour(){
-  const clean = hourRows.filter(r=>n(r.hours)>0);
-  if(!clean.length) return;
-
-  const totalH = clean.reduce((s,r)=>s+n(r.hours),0);
-  const per = hourAmount/totalH;
-
-  document.getElementById("hourResult").innerHTML =
-    "<ul>"+clean.map(r=>
-      `<li>${r.name||"Unnamed"}: $${Math.floor(r.hours*per)}</li>`
-    ).join("")+"</ul>";
-}
-
-drawSplitRows();
-drawHourRows();
 </script>
 
 </body>
